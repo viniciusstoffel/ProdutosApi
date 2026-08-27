@@ -1,0 +1,23 @@
+@API_HostAddress = http://localhost:5172
+
+POST {{API_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Teclado",
+  "price": 150.90
+}
+
+###
+
+GET {{API_HostAddress}}/api/products
+Accept: application/json
+
+###
+
+GET {{API_HostAddress}}/api/products/1
+Accept: application/json
+
+###
+
+DELETE {{API_HostAddress}}/api/products/1
