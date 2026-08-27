@@ -4,8 +4,8 @@ namespace Application.Interfaces;
 
 /*
  * IProductRepository (Domain) = como ler/escrever no banco.
- * IProductService (Application) = o que fazer quando alguem pede pra
- * criar/listar um produto - trabalha com DTO, nao com a entidade direto.
+ * IProductService (Application) = o que fazer quando alguém pede pra
+ * criar/listar um produto - trabalha com DTO, não com a entidade direto.
  */
 public interface IProductService
 {

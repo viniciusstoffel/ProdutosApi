@@ -1,6 +1,6 @@
 namespace Application.DTOs;
 
-// DTO de saida - tem Id e CreatedAt porque agora faz sentido o cliente
+// DTO de saída - tem Id e CreatedAt porque agora faz sentido o cliente
 // receber esses dados de volta
 public class ProductResponseDto
 {

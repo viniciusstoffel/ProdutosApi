@@ -5,12 +5,12 @@ using Domain.Interfaces;
 
 namespace Application.Services;
 
-// Implementacao de IProductService - traduz DTO <-> entidade Product
+// Implementação de IProductService - traduz DTO <-> entidade Product
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
 
-    // Injecao via construtor: o container de DI (Program.cs) entrega
+    // Injeção via construtor: o container de DI (Program.cs) entrega
     // o ProductRepository pronto aqui, sem precisar de "new"
     public ProductService(IProductRepository repository)
     {
@@ -35,12 +35,12 @@ public class ProductService : IProductService
         {
             Name = dto.Name,
             Price = dto.Price,
-            CreatedAt = DateTime.UtcNow // UTC pra nao depender do fuso do servidor
+            CreatedAt = DateTime.UtcNow // UTC pra não depender do fuso do servidor
         };
 
         await _repository.AddAsync(product, cancellationToken);
 
-        // o Id ja vem preenchido de volta depois do AddAsync
+        // o Id já vem preenchido de volta depois do AddAsync
         return MapToResponse(product);
     }
 
@@ -56,7 +56,7 @@ public class ProductService : IProductService
         return true;
     }
 
-    // static: nao usa nada da instancia, e so um mapper
+    // static: não usa nada da instância, é só um mapper
     private static ProductResponseDto MapToResponse(Product product) => new()
     {
         Id = product.Id,

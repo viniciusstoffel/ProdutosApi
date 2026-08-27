@@ -1,7 +1,7 @@
 /*
- * Camada API - unico projeto executavel da solucao. Referencia
+ * Camada API - único projeto executável da solução. Referencia
  * Application e Infrastructure. Job dela: expor tudo via HTTP e
- * configurar a Injecao de Dependencia (e aqui embaixo que isso acontece).
+ * configurar a Injeção de Dependência (é aqui embaixo que isso acontece).
  */
 
 using Application.Interfaces;
@@ -16,23 +16,23 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("A connection string 'DefaultConnection' não foi configurada.");
 
-// versao explicita, senao AutoDetect abriria uma conexao extra so pra descobrir
+// versão explícita, senão AutoDetect abriria uma conexão extra só pra descobrir
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 46));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, serverVersion));
 
 /*
- * Container de DI: cada AddX<Interface, Implementacao> ensina "quando
- * alguem pedir essa interface, entrega essa classe". O ProductsController
+ * Container de DI: cada AddX<Interface, Implementação> ensina "quando
+ * alguém pedir essa interface, entrega essa classe". O ProductsController
  * pede IProductService no construtor -> o container resolve a cadeia
  * inteira sozinho (AppDbContext -> ProductRepository -> ProductService
- * -> Controller). Ninguem escreve "new" em lugar nenhum do resto do codigo.
+ * -> Controller). Ninguém escreve "new" em lugar nenhum do resto do código.
  *
- * Scoped = uma instancia nova por requisicao HTTP (existe tambem
- * Singleton, unica pra app inteira, e Transient, nova toda vez que
- * pedem). Precisa ser Scoped porque o DbContext do EF Core nao pode
- * ser compartilhado entre requisicoes simultaneas.
+ * Scoped = uma instância nova por requisição HTTP (existe também
+ * Singleton, única pra app inteira, e Transient, nova toda vez que
+ * pedem). Precisa ser Scoped porque o DbContext do EF Core não pode
+ * ser compartilhado entre requisições simultâneas.
  */
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();

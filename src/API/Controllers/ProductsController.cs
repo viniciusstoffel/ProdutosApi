@@ -1,7 +1,7 @@
 /*
- * Unico lugar do projeto que fala HTTP. So conhece Application (DTOs e
+ * Único lugar do projeto que fala HTTP. Só conhece Application (DTOs e
  * IProductService) - nunca Domain ou Infrastructure. Assim, se trocar
- * o jeito de guardar produtos no futuro, esse arquivo nao muda nada.
+ * o jeito de guardar produtos no futuro, esse arquivo não muda nada.
  */
 
 using Application.DTOs;
@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[ApiController] // valida o model e le o body automaticamente
+[ApiController] // valida o model e lê o body automaticamente
 [Route("api/[controller]")] // [controller] vira "Products" -> api/Products
 public class ProductsController : ControllerBase
 {
@@ -29,7 +29,7 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    // {id:int} = route constraint, so aceita numero - senao 404 direto
+    // {id:int} = route constraint, só aceita número - senão 404 direto
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(ProductResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -46,10 +46,10 @@ public class ProductsController : ControllerBase
         CreateProductDto dto,
         CancellationToken cancellationToken)
     {
-        // [ApiController] ja validou o dto e ja devolveu 400 se precisasse
+        // [ApiController] já validou o dto e já devolveu 400 se precisasse
         var product = await _productService.CreateAsync(dto, cancellationToken);
 
-        // 201 + header Location apontando pro GetById - convencao REST
+        // 201 + header Location apontando pro GetById - convenção REST
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 

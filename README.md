@@ -1,13 +1,13 @@
-# InterviewApi
+# ProdutosApi
 
 API simples de cadastro de produtos, feita pra treinar/mostrar os fundamentos de
-backend em .NET: Clean Architecture, EF Core, MySQL e injecao de dependencia.
-Nada além disso - projeto pequeno de proposito, sem features demais.
+backend em .NET: Clean Architecture, EF Core, MySQL e injeção de dependência.
+Nada além disso - projeto pequeno de propósito, sem features demais.
 
 ## stack
 
 - .NET 8 / C# 12
-- ASP.NET Core Web API (Controllers, nao Minimal API)
+- ASP.NET Core Web API (Controllers, não Minimal API)
 - Entity Framework Core 8, Code First
 - Pomelo.EntityFrameworkCore.MySql 8.0.3 (driver do MySQL pro EF Core)
 - MySQL 8
@@ -18,43 +18,39 @@ Nada além disso - projeto pequeno de proposito, sem features demais.
 4 projetos, separados por camada:
 
 ```
-InterviewApi.sln
+ProdutosApi.sln
 └── src/
-    ├── Domain/          # entidade Product + interface IProductRepository
-    │                     # nao referencia nada, nem sabe que EF Core existe
+    ├── Domain/            # entidade Product + interface IProductRepository
+    │                       # não referencia nada, nem sabe que EF Core existe
     │
-    ├── Application/      # DTOs + ProductService (a logica de "o que fazer")
-    │                     # so referencia o Domain
+    ├── Application/        # DTOs + ProductService (a lógica de "o que fazer")
+    │                       # só referencia o Domain
     │
-    ├── Infrastructure/   # EF Core, AppDbContext, migrations, o repository de
-    │                     # verdade. Referencia Domain e Application
+    ├── Infrastructure/     # EF Core, AppDbContext, migrations, o repository de
+    │                       # verdade. Referencia Domain e Application
     │
-    └── API/               # Controllers + Program.cs (onde a DI eh configurada)
-                           # referencia Application e Infrastructure
+    └── API/                 # Controllers + Program.cs (onde a DI é configurada)
+                             # referencia Application e Infrastructure
 ```
 
-direcao das dependencias:
+direção das dependências:
 
 ```
 API ──> Application ──> Domain
  └────> Infrastructure ──┘
 ```
 
-Domain nao depende de nada - nem de Application, nem de Infrastructure, nem de
-pacote nenhum de banco/web. A Infrastructure eh quem implementa o
-IProductRepository que o Domain define. O Controller (na API) so conhece a
+Domain não depende de nada - nem de Application, nem de Infrastructure, nem de
+pacote nenhum de banco/web. A Infrastructure é quem implementa o
+IProductRepository que o Domain define. O Controller (na API) só conhece a
 Application, nunca fala direto com o banco.
 
-fluxo de uma requisicao:
+fluxo de uma requisição:
 
 ```
 HTTP -> ProductsController -> IProductService -> ProductService
      -> IProductRepository -> ProductRepository -> AppDbContext -> MySQL
 ```
-
-(se quiser entender tudo isso com mais calma, comentei praticamente linha por
-linha nos arquivos do projeto - da uma lida no codigo mesmo, comeca pelo
-Domain/Entities/Product.cs que eh o mais simples)
 
 ## rodando local
 
@@ -69,26 +65,26 @@ dotnet tool install --global dotnet-ef --version 8.0.13
 
 ### 1. cria o banco
 
-migration cria a tabela, mas nao o banco em si - isso e manual:
+migration cria a tabela, mas não o banco em si - isso é manual:
 
 ```sql
-CREATE DATABASE InterviewApi CHARACTER SET utf8mb4;
+CREATE DATABASE ProdutosApi CHARACTER SET utf8mb4;
 ```
 
-### 2. configura a senha (via user secrets, nao no appsettings.json)
+### 2. configura a senha (via user secrets, não no appsettings.json)
 
-o appsettings.json fica so com um placeholder de proposito - a senha real
-nunca deveria ir pro git. usa o user secrets do proprio dotnet:
+o appsettings.json fica só com um placeholder de propósito - a senha real
+nunca deveria ir pro git. usa o user secrets do próprio dotnet:
 
 ```bash
 dotnet user-secrets init --project src/API
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=InterviewApi;Uid=root;Pwd=SUA_SENHA_AQUI;" --project src/API
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=ProdutosApi;Uid=root;Pwd=SUA_SENHA_AQUI;" --project src/API
 ```
 
-isso guarda a senha fora da pasta do projeto (no seu perfil de usuario do
-Windows), entao nunca vai ser commitada sem querer.
+isso guarda a senha fora da pasta do projeto (no seu perfil de usuário do
+Windows), então nunca vai ser commitada sem querer.
 
-se o MySQL local nao for 8.0.46, ajusta tambem a versao no src/API/Program.cs:
+se o MySQL local não for 8.0.46, ajusta também a versão no src/API/Program.cs:
 
 ```csharp
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 46));
@@ -116,12 +112,12 @@ Swagger fica em `/swagger`.
 
 ## endpoints
 
-| metodo | rota                 | o que faz              | respostas |
-|--------|----------------------|-------------------------|-----------|
-| POST   | `/api/products`      | cria um produto         | 201, 400  |
-| GET    | `/api/products`      | lista todos os produtos | 200       |
-| GET    | `/api/products/{id}` | busca um produto por id | 200, 404  |
-| DELETE | `/api/products/{id}` | remove um produto       | 204, 404  |
+| método | rota                  | o que faz                | respostas |
+|--------|-----------------------|---------------------------|-----------|
+| POST   | `/api/products`       | cria um produto           | 201, 400  |
+| GET    | `/api/products`       | lista todos os produtos   | 200       |
+| GET    | `/api/products/{id}`  | busca um produto por id   | 200, 404  |
+| DELETE | `/api/products/{id}`  | remove um produto         | 204, 404  |
 
 ## exemplo
 

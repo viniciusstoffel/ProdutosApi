@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Configurations;
 
-// Fluent API do EF Core - configura a tabela via codigo em vez de
+// Fluent API do EF Core - configura a tabela via código em vez de
 // attributes na entidade (assim o Domain fica livre do EF Core)
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
@@ -17,8 +17,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasMaxLength(100);
 
-        // decimal(18,2): sem isso o EF Core escolhe uma precisao padrao
-        // que pode nao ser boa pra dinheiro
+        // decimal(18,2): sem isso o EF Core escolhe uma precisão padrão
+        // que pode não ser boa pra dinheiro
         builder.Property(p => p.Price)
             .IsRequired()
             .HasColumnType("decimal(18,2)");
