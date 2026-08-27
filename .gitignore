@@ -4,3 +4,6 @@ obj/
 .vs/
 .vscode/
 appsettings.*.local.json
+
+# guia de estudo, so pra uso local - nao faz sentido publico no repo
+GUIA-COMPLETO.md

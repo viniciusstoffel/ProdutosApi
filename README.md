@@ -1,138 +1,129 @@
 # InterviewApi
 
-## 1. Objetivo
+API simples de cadastro de produtos, feita pra treinar/mostrar os fundamentos de
+backend em .NET: Clean Architecture, EF Core, MySQL e injecao de dependencia.
+Nada além disso - projeto pequeno de proposito, sem features demais.
 
-API REST de exemplo para cadastro de produtos, construída com ASP.NET Core e Entity Framework Core.
-O foco é demonstrar, em um projeto pequeno e legível, os fundamentos de:
-
-- Clean Architecture (separação em Domain, Application, Infrastructure e API)
-- Inversão de dependência (as camadas internas definem as abstrações, as externas implementam)
-- Entity Framework Core com abordagem Code First e migrations
-- Injeção de dependência nativa do ASP.NET Core
-
-## 2. Tecnologias
+## stack
 
 - .NET 8 / C# 12
-- ASP.NET Core Web API
-- Entity Framework Core 8
-- Pomelo.EntityFrameworkCore.MySql 8.0.3
+- ASP.NET Core Web API (Controllers, nao Minimal API)
+- Entity Framework Core 8, Code First
+- Pomelo.EntityFrameworkCore.MySql 8.0.3 (driver do MySQL pro EF Core)
 - MySQL 8
-- Swagger (Swashbuckle)
+- Swagger pra testar os endpoints direto no navegador
 
-## 3. Estrutura da solução
+## arquitetura
+
+4 projetos, separados por camada:
 
 ```
 InterviewApi.sln
 └── src/
-    ├── Domain/                         # Entidades e abstrações. Sem dependências externas.
-    │   ├── Entities/Product.cs
-    │   └── Interfaces/IProductRepository.cs
+    ├── Domain/          # entidade Product + interface IProductRepository
+    │                     # nao referencia nada, nem sabe que EF Core existe
     │
-    ├── Application/                    # Casos de uso, DTOs e regras de aplicação.
-    │   ├── DTOs/CreateProductDto.cs
-    │   ├── DTOs/ProductResponseDto.cs
-    │   ├── Interfaces/IProductService.cs
-    │   └── Services/ProductService.cs
+    ├── Application/      # DTOs + ProductService (a logica de "o que fazer")
+    │                     # so referencia o Domain
     │
-    ├── Infrastructure/                 # Acesso a dados: EF Core, MySQL, repositórios.
-    │   ├── Data/AppDbContext.cs
-    │   ├── Data/Migrations/
-    │   ├── Configurations/ProductConfiguration.cs
-    │   └── Repositories/ProductRepository.cs
+    ├── Infrastructure/   # EF Core, AppDbContext, migrations, o repository de
+    │                     # verdade. Referencia Domain e Application
     │
-    └── API/                            # Exposição HTTP e composição da aplicação.
-        ├── Controllers/ProductsController.cs
-        ├── Program.cs
-        └── appsettings.json
+    └── API/               # Controllers + Program.cs (onde a DI eh configurada)
+                           # referencia Application e Infrastructure
 ```
 
-Direção das dependências:
+direcao das dependencias:
 
 ```
 API ──> Application ──> Domain
  └────> Infrastructure ──┘
 ```
 
-O `Domain` não referencia nenhum outro projeto. A `Infrastructure` implementa a interface
-`IProductRepository` definida no `Domain`, e é registrada no contêiner de DI pela `API`.
+Domain nao depende de nada - nem de Application, nem de Infrastructure, nem de
+pacote nenhum de banco/web. A Infrastructure eh quem implementa o
+IProductRepository que o Domain define. O Controller (na API) so conhece a
+Application, nunca fala direto com o banco.
 
-Fluxo de uma requisição:
+fluxo de uma requisicao:
 
 ```
-HTTP → ProductsController → IProductService → ProductService
-     → IProductRepository → ProductRepository → AppDbContext → MySQL
+HTTP -> ProductsController -> IProductService -> ProductService
+     -> IProductRepository -> ProductRepository -> AppDbContext -> MySQL
 ```
 
-## 4. Pré-requisitos
+(se quiser entender tudo isso com mais calma, comentei praticamente linha por
+linha nos arquivos do projeto - da uma lida no codigo mesmo, comeca pelo
+Domain/Entities/Product.cs que eh o mais simples)
 
-- .NET SDK 8 (ou superior, com o targeting pack do `net8.0`)
-- MySQL 8 rodando localmente
-- Ferramenta `dotnet-ef`:
+## rodando local
+
+precisa ter instalado:
+- .NET SDK 8+
+- MySQL 8 rodando local
+- dotnet-ef:
 
 ```bash
 dotnet tool install --global dotnet-ef --version 8.0.13
 ```
 
-## 5. Configuração do MySQL
+### 1. cria o banco
 
-Crie o banco (as migrations criam as tabelas, mas não o schema):
+migration cria a tabela, mas nao o banco em si - isso e manual:
 
 ```sql
 CREATE DATABASE InterviewApi CHARACTER SET utf8mb4;
 ```
 
-Depois preencha a senha em `src/API/appsettings.json`:
+### 2. configura a senha (via user secrets, nao no appsettings.json)
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=InterviewApi;Uid=root;Pwd=sua_senha;"
-  }
-}
+o appsettings.json fica so com um placeholder de proposito - a senha real
+nunca deveria ir pro git. usa o user secrets do proprio dotnet:
+
+```bash
+dotnet user-secrets init --project src/API
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=InterviewApi;Uid=root;Pwd=SUA_SENHA_AQUI;" --project src/API
 ```
 
-Se o seu servidor não for MySQL 8.0, ajuste também a versão declarada em `src/API/Program.cs`:
+isso guarda a senha fora da pasta do projeto (no seu perfil de usuario do
+Windows), entao nunca vai ser commitada sem querer.
+
+se o MySQL local nao for 8.0.46, ajusta tambem a versao no src/API/Program.cs:
 
 ```csharp
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 46));
 ```
 
-## 6. Migrations
-
-A migration inicial (`InitialCreate`) já está versionada em `src/Infrastructure/Data/Migrations`.
-Para aplicá-la ao banco:
+### 3. roda a migration
 
 ```bash
 dotnet ef database update --project src/Infrastructure --startup-project src/API
 ```
 
-Para criar novas migrations:
+pra criar uma migration nova (se mudar alguma entidade):
 
 ```bash
 dotnet ef migrations add NomeDaMigration --project src/Infrastructure --startup-project src/API --output-dir Data/Migrations
 ```
 
-O projeto `Infrastructure` é onde o `DbContext` vive; o projeto `API` é o startup project,
-porque é ele quem carrega a connection string e configura o provider.
-
-## 7. Executando a API
+### 4. roda a API
 
 ```bash
 dotnet run --project src/API
 ```
 
-O Swagger fica disponível em `/swagger` no ambiente de desenvolvimento.
+Swagger fica em `/swagger`.
 
-## 8. Endpoints
+## endpoints
 
-| Método | Rota                 | Descrição                     | Respostas       |
-|--------|----------------------|-------------------------------|-----------------|
-| POST   | `/api/products`      | Cria um produto               | 201, 400        |
-| GET    | `/api/products`      | Lista todos os produtos       | 200             |
-| GET    | `/api/products/{id}` | Busca um produto por id       | 200, 404        |
-| DELETE | `/api/products/{id}` | Remove um produto             | 204, 404        |
+| metodo | rota                 | o que faz              | respostas |
+|--------|----------------------|-------------------------|-----------|
+| POST   | `/api/products`      | cria um produto         | 201, 400  |
+| GET    | `/api/products`      | lista todos os produtos | 200       |
+| GET    | `/api/products/{id}` | busca um produto por id | 200, 404  |
+| DELETE | `/api/products/{id}` | remove um produto       | 204, 404  |
 
-## 9. Exemplo de requisição
+## exemplo
 
 ```bash
 curl -X POST http://localhost:5172/api/products \
@@ -140,7 +131,7 @@ curl -X POST http://localhost:5172/api/products \
   -d '{"name":"Teclado","price":150.90}'
 ```
 
-Resposta (`201 Created`):
+resposta (201):
 
 ```json
 {
